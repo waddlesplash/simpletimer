@@ -1,0 +1,8 @@
+SimpleTimer 1.3
+ - SimpleTimer has been converted from Visual Basic .NET into Qt C++.
+ - You can now pause the timer when it is overtime.
+ - The installer graphic has been updated, it now looks fancier.
+ - On Windows 7 and up, the icon in the taskbar indicates how much of the original time is left.
+ - SimpleTimer's logo received some minor changes.
+ - BUGFIX: Pressing “Reset” while the timer is paused caused the Pause button to continue to say “Resume”.
+ - BUGFIX: Weird case that occasionally made the minutes go negative.
