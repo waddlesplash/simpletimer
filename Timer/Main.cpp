@@ -21,7 +21,7 @@
  *
 */
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "MainFrm.h"
 
 int main(int argc, char *argv[])
