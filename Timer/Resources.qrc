@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
         <file>SimpleTimerLogo.png</file>
-        <file>Qt.png</file>
     </qresource>
 </RCC>

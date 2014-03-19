@@ -45,7 +45,6 @@ public:
 
 private slots:
     void on_startBtn_clicked();
-    void on_aboutQtBtn_clicked();
     void on_aboutSTBtn_clicked();
     void time();
     void on_pauseBtn_clicked();

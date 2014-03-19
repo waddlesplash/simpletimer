@@ -97,11 +97,6 @@ void MainFrm::on_startBtn_clicked()
 #endif
 }
 
-void MainFrm::on_aboutQtBtn_clicked()
-{
-    QApplication::aboutQt();
-}
-
 void MainFrm::on_aboutSTBtn_clicked()
 {
     QMessageBox *msg = new QMessageBox(this);
@@ -111,7 +106,7 @@ void MainFrm::on_aboutSTBtn_clicked()
 #else
     msg->setText(tr("<b><big>SimpleTimer</big></b>"));
 #endif
-    msg->setInformativeText(tr("<i>Version 1.3</i><br>© 2009-2012 WaddleSplash<br>http://bsimpletimer.sourceforge.net/"));
+    msg->setInformativeText(tr("<i>Version 1.3</i><br>Â© 2009-2012 WaddleSplash<br>http://bsimpletimer.sourceforge.net/"));
     msg->setIconPixmap(this->windowIcon().pixmap(32,32));
     msg->exec();
 }
