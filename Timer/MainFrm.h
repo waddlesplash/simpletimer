@@ -50,7 +50,7 @@ private slots:
 
 private:
     Ui::MainFrm *ui;
-    int stMsgBox(QString txt, QString infoTxt, QString windTitle, bool isCritical = false);\
+    int modalMsgBox(QString tagline, QString text, bool critical = false);
 
 #ifdef Q_OS_WIN
     QWinTaskbarButton* taskbarButton;

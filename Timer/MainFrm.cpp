@@ -67,7 +67,7 @@ MainFrm::~MainFrm()
 void MainFrm::on_startBtn_clicked()
 {
     ui->stackedWidget->setCurrentIndex(1);
-    this->setWindowTitle(tr("Timing"));
+    setWindowTitle(tr("Timing"));
     origMins = ui->minSelect->value();
     minLeft = origMins;
     ui->timeLbl->setText(QString::number(origMins) + " : 00");
@@ -95,7 +95,7 @@ void MainFrm::on_aboutSTBtn_clicked()
     QMessageBox *msg = new QMessageBox(this);
     msg->setWindowTitle(tr("About SimpleTimer"));
     msg->setText(tr("<b>SimpleTimer</b>"));
-    msg->setInformativeText(tr("<i>Version 1.3</i><br>&copy; 2009-2014 waddlesplash<br><a href=\"https://github.com/waddlesplash/simpletimer\">View On GitHub</a>"));
+    msg->setInformativeText(tr("<i>Version 1.3</i><br>&copy; 2009-2014 waddlesplash<br><a href=\"https://github.com/waddlesplash/simpletimer\">View on GitHub</a>"));
     msg->setIconPixmap(this->windowIcon().pixmap(32,32));
     msg->exec();
 }
@@ -129,7 +129,7 @@ void MainFrm::time()
         if(((minLeft <= 0) && (secLeft <= 0)) || (minLeft <= -1))
         {
             timer->stop();
-            stMsgBox(tr("Time's up!"),tr("Your time is up!"),tr("SimpleTimer"),true);
+            modalMsgBox(tr("Time's up!"), tr("Your time is up!"), true);
             secLeft = 0;
             minLeft = 0;
             ui->timeLbl->setText(QString::number(minLeft) + " : " + QString::number(secLeft));
@@ -147,13 +147,13 @@ void MainFrm::time()
         {
             didDoFiveMbox = true;
             if(showWarn)
-            { stMsgBox(tr("5 minutes left!"),tr("You have 5 minutes left."),tr("SimpleTimer")); }
+            { modalMsgBox(tr("5 minutes left!"), tr("You have 5 minutes left.")); }
         }
         if((minLeft <= 0) && (secLeft <= 30) && (!didDo30sMbox))
         {
             didDo30sMbox = true;
             if(showWarn)
-            { stMsgBox(tr("30 seconds left!"),tr("You have 30 seconds left."),tr("SimpleTimer")); }
+            { modalMsgBox(tr("30 seconds left!"),tr("You have 30 seconds left.")); }
         }
         ui->timeLbl->setText(QString::number(minLeft) + " : " + QString::number(secLeft));
 #ifdef Q_OS_WIN
@@ -174,17 +174,17 @@ void MainFrm::time()
         if((minLeft >= 5) && (!didDoOvrFiveMbox))
         {
             didDoOvrFiveMbox = true;
-            stMsgBox(tr("5 minutes overtime!!!"), tr("You are 5 minutes overtime!"), tr("Timer - Overtime!!!"), true);
+            modalMsgBox(tr("5 minutes overtime!"), tr("You are 5 minutes overtime!"), true);
         }
         if((minLeft >= 10) && (!didDoOvrTenMbox))
         {
             didDoOvrTenMbox = true;
-            stMsgBox(tr("10 minutes overtime!!!"), tr("You are 10 minutes overtime!"), tr("Timer - Overtime!!!"), true);
+            modalMsgBox(tr("10 minutes overtime!"), tr("You are 10 minutes overtime!"), true);
         }
         if((minLeft >= 15) && (!didDoOvrFiftMbox))
         {
             didDoOvrFiftMbox = true;
-            stMsgBox(tr("15 minutes overtime!!!"), tr("You are 15 minutes overtime!"), tr("Timer - Overtime!!!"), true);
+            modalMsgBox(tr("15 minutes overtime!"), tr("You are 15 minutes overtime!"), true);
         }
         ui->timeLbl->setText(QString::number(minLeft) + " : " + QString::number(secLeft));
     }
@@ -194,33 +194,37 @@ void MainFrm::time()
     }
 }
 
-int MainFrm::stMsgBox(QString txt, QString infoTxt, QString windTitle, bool isCritical)
+int MainFrm::modalMsgBox(QString tagline, QString text, bool critical)
 {
-    QDesktopWidget *deskWidg = QApplication::desktop();
-    QMessageBox *msg = new QMessageBox(deskWidg);
-    msg->setWindowTitle(windTitle);
-    msg->setInformativeText(infoTxt);
-    msg->setText("<big><b>" + txt + "</b></big>");
+    QDesktopWidget *desktop = QApplication::desktop();
+    QMessageBox *msg = new QMessageBox(desktop);
+    msg->setWindowTitle(tr("SimpleTimer"));
+    msg->setInformativeText(tagline);
+    msg->setText("<big><b>" + text + "</b></big>");
     msg->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
 
-    if(isCritical) { msg->setIcon(QMessageBox::Critical); }
-    else { msg->setIcon(QMessageBox::Information); }
+    if(critical) {
+        msg->setIcon(QMessageBox::Critical);
+    } else {
+        msg->setIcon(QMessageBox::Information);
+    }
 
 #ifdef Q_WS_X11
-    // Center window -- example from http://www.qtcentre.org/threads/14772-how-to-show-window-in-the-center-of-the-screen
-    // Unnecessary for Win because it automatically centers the window
+    /* Center window in current screen.
+     *   From http://www.qtcentre.org/threads/14772-how-to-show-window-in-the-center-of-the-screen
+     * Unnecessary for Windows because it automatically centers the window. */
     int screenWidth, width;
     int screenHeight, height;
     int x, y;
     QSize windowSize;
-    screenWidth = deskWidg->width();
-    screenHeight = deskWidg->height();
+    screenWidth = desktop->width();
+    screenHeight = desktop->height();
     windowSize = msg->size();
     width = windowSize.width();
     height = windowSize.height();
     x = (screenWidth - width) / 2;
     y = (screenHeight - height) / 2;
-    msg->setGeometry(x,y,msg->geometry().width(),msg->geometry().height());
+    msg->setGeometry(x, y, msg->geometry().width(),msg->geometry().height());
 #endif
     return msg->exec();
 }
