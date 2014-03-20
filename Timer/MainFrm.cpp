@@ -28,6 +28,7 @@
 #include <QDateTime>
 #include <QTimer>
 #include <QDesktopWidget>
+#include <QWhatsThis>
 
 #ifdef Q_OS_WIN
 #   include <QtWinExtras>
@@ -64,6 +65,23 @@ MainFrm::~MainFrm()
     delete ui;
 }
 
+bool MainFrm::event(QEvent *e)
+{
+    if(e->type() == QEvent::EnterWhatsThisMode) {
+        QWhatsThis::leaveWhatsThisMode();
+        e->accept();
+        QMessageBox *msg = new QMessageBox(this);
+        msg->setWindowTitle(tr("About SimpleTimer"));
+        msg->setText(tr("<b>SimpleTimer</b>"));
+        msg->setInformativeText(tr("<i>Version 1.3</i><br>&copy; 2009-2014 waddlesplash<br><a href=\"https://github.com/waddlesplash/simpletimer\">View on GitHub</a>"));
+        msg->setIconPixmap(this->windowIcon().pixmap(32,32));
+        msg->exec();
+        return true;
+    } else {
+        return QDialog::event(e);
+    }
+}
+
 void MainFrm::on_startBtn_clicked()
 {
     ui->stackedWidget->setCurrentIndex(1);
@@ -88,16 +106,6 @@ void MainFrm::on_startBtn_clicked()
     taskbarProgress->resume();
     taskbarProgress->setValue(100);
 #endif
-}
-
-void MainFrm::on_aboutSTBtn_clicked()
-{
-    QMessageBox *msg = new QMessageBox(this);
-    msg->setWindowTitle(tr("About SimpleTimer"));
-    msg->setText(tr("<b>SimpleTimer</b>"));
-    msg->setInformativeText(tr("<i>Version 1.3</i><br>&copy; 2009-2014 waddlesplash<br><a href=\"https://github.com/waddlesplash/simpletimer\">View on GitHub</a>"));
-    msg->setIconPixmap(this->windowIcon().pixmap(32,32));
-    msg->exec();
 }
 
 void MainFrm::time()

@@ -21,5 +21,3 @@ SOURCES += Main.cpp \
 HEADERS  += MainFrm.h
 
 FORMS    += MainFrm.ui
-
-RESOURCES += Resources.qrc

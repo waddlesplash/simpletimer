@@ -41,9 +41,11 @@ public:
     explicit MainFrm(QWidget *parent = 0);
     ~MainFrm();
 
+protected:
+    bool event(QEvent *e);
+
 private slots:
     void on_startBtn_clicked();
-    void on_aboutSTBtn_clicked();
     void time();
     void on_pauseBtn_clicked();
     void on_resetBtn_clicked();
