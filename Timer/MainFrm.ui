@@ -14,7 +14,7 @@
    <string>SimpleTimer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="Resources.qrc">
+   <iconset>
     <normaloff>:/SimpleTimerLogo.png</normaloff>:/SimpleTimerLogo.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
@@ -214,8 +214,6 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="Resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
