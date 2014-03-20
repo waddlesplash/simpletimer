@@ -7,24 +7,19 @@
 QT       += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+win32 {
+    RC_FILE = Res.rc
+    QT += winextras # requires Qt5
+}
+
 TARGET = simpletimer
 TEMPLATE = app
 
-
-SOURCES += Main.cpp\
+SOURCES += Main.cpp \
     MainFrm.cpp
 
-HEADERS  += \
-    MainFrm.h \
-    WinUtils.h
+HEADERS  += MainFrm.h
 
-FORMS    += \
-    MainFrm.ui
+FORMS    += MainFrm.ui
 
-RESOURCES += \
-    Resources.qrc
-
-win32 {
-    RC_FILE = Res.rc
-    LIBS +=  libole32
-}
+RESOURCES += Resources.qrc

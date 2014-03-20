@@ -27,13 +27,11 @@
 #include <QDialog>
 #include <QString>
 
-#ifdef Q_OS_WIN
-#   include "WinUtils.h"
-#endif
-
 namespace Ui {
-    class MainFrm;
+class MainFrm;
 }
+class QWinTaskbarButton;
+class QWinTaskbarProgress;
 
 class MainFrm : public QDialog
 {
@@ -50,22 +48,13 @@ private slots:
     void on_pauseBtn_clicked();
     void on_resetBtn_clicked();
 
-#ifdef Q_OS_WIN
-protected:
-    bool winEvent(MSG * message, long * result);
-#endif
-
 private:
     Ui::MainFrm *ui;
-    int stMsgBox(QString txt, QString infoTxt, QString windTitle, bool isCritical = false);
+    int stMsgBox(QString txt, QString infoTxt, QString windTitle, bool isCritical = false);\
 
 #ifdef Q_OS_WIN
-    void updateProgBarState(int state);
-    void updateProgBarVal(int value);
-    void initTaskbarButton();
-
-    unsigned int m_IDTaskbarButtonCreated;
-    ITaskbarList3* m_taskbarInterface;
+    QWinTaskbarButton* taskbarButton;
+    QWinTaskbarProgress* taskbarProgress;
 #endif
 };
 

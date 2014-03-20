@@ -29,6 +29,10 @@
 #include <QTimer>
 #include <QDesktopWidget>
 
+#ifdef Q_OS_WIN
+#   include <QtWinExtras>
+#endif
+
 QTimer *timer;
 
 bool countingUp = false;
@@ -53,28 +57,12 @@ MainFrm::MainFrm(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->startBtn->setIcon(style()->standardIcon(QStyle::SP_ArrowForward));
-#ifdef Q_OS_WIN
-    m_taskbarInterface = NULL;
-
-    // Compute the value for the TaskbarButtonCreated message
-    m_IDTaskbarButtonCreated = RegisterWindowMessage(L"TaskbarButtonCreated");
-#endif
 }
 
 MainFrm::~MainFrm()
 {
     delete ui;
 }
-
-#ifdef Q_OS_WIN
-bool MainFrm::winEvent(MSG * message, long * result)
-{
-    if (message->message == m_IDTaskbarButtonCreated) {
-        initTaskbarButton();
-    }
-    return false;
-}
-#endif
 
 void MainFrm::on_startBtn_clicked()
 {
@@ -91,9 +79,14 @@ void MainFrm::on_startBtn_clicked()
     connect(timer,SIGNAL(timeout()),this,SLOT(time()));
     timer->start();
     timeStarted = QDateTime::currentDateTime();
+
 #ifdef Q_OS_WIN
-    updateProgBarState(2);
-    updateProgBarVal(100);
+    taskbarButton = new QWinTaskbarButton(this);
+    taskbarButton->setWindow(windowHandle());
+    taskbarProgress = taskbarButton->progress();
+    taskbarProgress->show();
+    taskbarProgress->resume();
+    taskbarProgress->setValue(100);
 #endif
 }
 
@@ -101,12 +94,8 @@ void MainFrm::on_aboutSTBtn_clicked()
 {
     QMessageBox *msg = new QMessageBox(this);
     msg->setWindowTitle(tr("About SimpleTimer"));
-#ifdef Q_OS_MAC
-    msg->setText(tr("SimpleTimer"));
-#else
-    msg->setText(tr("<b><big>SimpleTimer</big></b>"));
-#endif
-    msg->setInformativeText(tr("<i>Version 1.3</i><br>© 2009-2012 WaddleSplash<br>http://bsimpletimer.sourceforge.net/"));
+    msg->setText(tr("<b>SimpleTimer</b>"));
+    msg->setInformativeText(tr("<i>Version 1.3</i><br>&copy; 2009-2014 waddlesplash<br><a href=\"https://github.com/waddlesplash/simpletimer\">View On GitHub</a>"));
     msg->setIconPixmap(this->windowIcon().pixmap(32,32));
     msg->exec();
 }
@@ -146,8 +135,8 @@ void MainFrm::time()
             ui->timeLbl->setText(QString::number(minLeft) + " : " + QString::number(secLeft));
             countingUp = true;
 #ifdef Q_OS_WIN
-            updateProgBarState(3);
-            updateProgBarVal(100);
+            taskbarProgress->stop();
+            taskbarProgress->setValue(100);
 #endif
             this->setStyleSheet("background-color: rgb(255,0,0);");
             ui->pauseBtn->setText(tr("Pause")); // How would it be possible to be otherwise anyway?
@@ -169,7 +158,7 @@ void MainFrm::time()
         ui->timeLbl->setText(QString::number(minLeft) + " : " + QString::number(secLeft));
 #ifdef Q_OS_WIN
         int percTot = ((minLeft+((secLeft/60.0)))/origMins)*100;
-        updateProgBarVal(percTot);
+        taskbarProgress->setValue(percTot);
 #endif
     }
     else if(countingUp)
@@ -211,15 +200,12 @@ int MainFrm::stMsgBox(QString txt, QString infoTxt, QString windTitle, bool isCr
     QMessageBox *msg = new QMessageBox(deskWidg);
     msg->setWindowTitle(windTitle);
     msg->setInformativeText(infoTxt);
-#ifdef Q_OS_MAC
-    msg->setText(txt);
-#else
     msg->setText("<big><b>" + txt + "</b></big>");
-#endif
     msg->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
 
     if(isCritical) { msg->setIcon(QMessageBox::Critical); }
     else { msg->setIcon(QMessageBox::Information); }
+
 #ifdef Q_WS_X11
     // Center window -- example from http://www.qtcentre.org/threads/14772-how-to-show-window-in-the-center-of-the-screen
     // Unnecessary for Win because it automatically centers the window
@@ -246,7 +232,8 @@ void MainFrm::on_pauseBtn_clicked()
         timer->stop();
         ui->pauseBtn->setText(tr("Resume"));
 #ifdef Q_OS_WIN
-        updateProgBarState(4);
+        taskbarProgress->resume();
+        taskbarProgress->pause();
 #endif
     }
     else
@@ -256,9 +243,9 @@ void MainFrm::on_pauseBtn_clicked()
         ui->pauseBtn->setText(tr("Pause"));
 #ifdef Q_OS_WIN
         if(countingUp)
-        { updateProgBarState(3); }
+        { taskbarProgress->stop(); }
         else
-        { updateProgBarState(2); }
+        { taskbarProgress->resume(); }
 #endif
     }
 }
@@ -273,58 +260,9 @@ void MainFrm::on_resetBtn_clicked()
     ui->timeLbl->setText(QString::number(origMins) + " : 00");
     countingUp = false;
 #ifdef Q_OS_WIN
-    updateProgBarState(2);
-    updateProgBarVal(100);
+    taskbarProgress->resume();
+    taskbarProgress->setValue(100);
 #endif
     timer->start();
     timeStarted = QDateTime::currentDateTime();
 }
-
-#ifdef Q_OS_WIN
-// From an online example of how to do progressbars in the taskbar via Qt
-void MainFrm::updateProgBarState(int state) {
-    if (m_taskbarInterface) {
-        switch(state) {
-        case 1:
-            m_taskbarInterface->SetProgressState(winId(), TBPF_INDETERMINATE);
-            break;
-
-        case 2:
-            m_taskbarInterface->SetProgressState(winId(), TBPF_NORMAL);
-            break;
-
-        case 3:
-            m_taskbarInterface->SetProgressState(winId(), TBPF_ERROR);
-            break;
-
-        case 4:
-            m_taskbarInterface->SetProgressState(winId(), TBPF_PAUSED);
-            break;
-
-        default:
-            m_taskbarInterface->SetProgressState(winId(), TBPF_NOPROGRESS);
-            break;
-        }
-    }
-
-}
-
-void MainFrm::updateProgBarVal(int value) {
-    if (m_taskbarInterface) {
-        m_taskbarInterface->SetProgressValue(winId(), value, 99);
-    }
-}
-
-void MainFrm::initTaskbarButton() {
-    HRESULT hr = CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, IID_ITaskbarList3, reinterpret_cast<void**> (&(m_taskbarInterface)));
-
-    if (SUCCEEDED(hr)) {
-        hr = m_taskbarInterface->HrInit();
-
-        if (FAILED(hr)) {
-            m_taskbarInterface->Release();
-            m_taskbarInterface = NULL;
-        }
-    }
-}
-#endif
