@@ -57,9 +57,6 @@
        </property>
        <item row="0" column="0" colspan="3">
         <widget class="QSpinBox" name="minSelect">
-         <property name="whatsThis">
-          <string>Specify how many minutes to count down from here.</string>
-         </property>
          <property name="minimum">
           <number>0</number>
          </property>
@@ -86,9 +83,6 @@
        </item>
        <item row="1" column="1">
         <widget class="QCheckBox" name="showWarnChk">
-         <property name="whatsThis">
-          <string>If this is checked when &quot;Start&quot; is pressed, the &quot;5 minutes left&quot; and &quot;30 seconds left&quot; warnings will not be shown.</string>
-         </property>
          <property name="text">
           <string>Don't show warnings</string>
          </property>
@@ -173,9 +167,6 @@
       <layout class="QGridLayout" name="gridLayout_5">
        <item row="0" column="0" colspan="2">
         <widget class="QLabel" name="timeLbl">
-         <property name="whatsThis">
-          <string>This label tells you how much time is left.</string>
-         </property>
          <property name="text">
           <string>00 : 00</string>
          </property>
@@ -189,9 +180,6 @@
        </item>
        <item row="1" column="0">
         <widget class="QPushButton" name="pauseBtn">
-         <property name="whatsThis">
-          <string>Pause/resume the timer.</string>
-         </property>
          <property name="text">
           <string>Pause</string>
          </property>
@@ -199,9 +187,6 @@
        </item>
        <item row="1" column="1">
         <widget class="QPushButton" name="resetBtn">
-         <property name="whatsThis">
-          <string>Pressing this button will reset the time left to the original value.</string>
-         </property>
          <property name="text">
           <string>Reset Time</string>
          </property>
