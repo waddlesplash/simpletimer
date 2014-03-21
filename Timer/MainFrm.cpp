@@ -57,7 +57,12 @@ MainFrm::MainFrm(QWidget *parent) :
     ui(new Ui::MainFrm)
 {
     ui->setupUi(this);
-    ui->startBtn->setIcon(style()->standardIcon(QStyle::SP_ArrowForward));
+
+    if(style()->styleHint(QStyle::SH_DialogButtonBox_ButtonsHaveIcons)) {
+        ui->startBtn->setIcon(style()->standardIcon(QStyle::SP_ArrowForward));
+        ui->pauseBtn->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        ui->resetBtn->setIcon(style()->standardIcon(QStyle::SP_DialogResetButton));
+    }
 }
 
 MainFrm::~MainFrm()
