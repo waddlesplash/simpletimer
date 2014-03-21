@@ -25,38 +25,25 @@
 #include "ui_MainFrm.h"
 
 #include <QMessageBox>
-#include <QDateTime>
-#include <QTimer>
 #include <QDesktopWidget>
 #include <QWhatsThis>
-
-#ifdef Q_OS_WIN
-#   include <QtWinExtras>
-#endif
-
-QTimer *timer;
-
-bool countingUp = false;
-bool showWarn = true;
-
-bool didDoOvrTenMbox = false;
-bool didDoOvrFiftMbox = false;
-bool didDoOvrFiveMbox = false;
-bool didDoFiveMbox = false;
-bool didDo30sMbox = false;
-
-int origMins = 1;
-
-int minLeft = 1;
-int secLeft = 0;
-
-QDateTime timeStarted;
 
 MainFrm::MainFrm(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::MainFrm)
 {
     ui->setupUi(this);
+
+    countingUp = false;
+    showWarn = true;
+    didDoOvrTenMbox = false;
+    didDoOvrFiftMbox = false;
+    didDoOvrFiveMbox = false;
+    didDoFiveMbox = false;
+    didDo30sMbox = false;
+    origMins = 1;
+    minLeft = 1;
+    secLeft = 0;
 
     if(style()->styleHint(QStyle::SH_DialogButtonBox_ButtonsHaveIcons)) {
         ui->startBtn->setIcon(style()->standardIcon(QStyle::SP_ArrowForward));
@@ -93,15 +80,14 @@ void MainFrm::on_startBtn_clicked()
     setWindowTitle(tr("Timing"));
     origMins = ui->minSelect->value();
     minLeft = origMins;
-    ui->timeLbl->setText(QString::number(origMins) + " : 00");
+    updateTimeLabel();
     showWarn = !ui->showWarnChk->isChecked();
 
-    timer = new QTimer(this);
-    timer->setInterval(1000);
-    timer->setSingleShot(false);
-    connect(timer,SIGNAL(timeout()),this,SLOT(time()));
-    timer->start();
-    timeStarted = QDateTime::currentDateTime();
+    triggerTimer.setInterval(1000);
+    triggerTimer.setSingleShot(false);
+    connect(&triggerTimer,SIGNAL(timeout()),this,SLOT(time()));
+    triggerTimer.start();
+    accurateTimer.start();
 
 #ifdef Q_OS_WIN
     taskbarButton = new QWinTaskbarButton(this);
@@ -116,98 +102,72 @@ void MainFrm::on_startBtn_clicked()
 void MainFrm::time()
 {
     int minPassed = 0;
-    int secPassed = 0;
-    QDateTime curTime;
+    int secPassed = accurateTimer.restart()/1000;
 
-    curTime = QDateTime::currentDateTime();
-    secPassed = timeStarted.secsTo(curTime);
-    timeStarted = timeStarted.addSecs(secPassed);
-
-    // make sure that the seconds are less than 60
-    while(secPassed >= 60)
-    {
+    /* Compute minPassed */
+    while(secPassed >= 60)  {
         minPassed += 1;
         secPassed -= 60;
     }
-    if(!countingUp)
-    {
+
+    if(!countingUp) {
         minLeft -= minPassed;
         secLeft -= secPassed;
-        // Get rid of any negatives on the seconds
-        while(secLeft <= -1)
-        {
-            minLeft -= 1;
-            secLeft += 60;
-        }
-        if(((minLeft <= 0) && (secLeft <= 0)) || (minLeft <= -1))
-        {
-            timer->stop();
+        if(minLeft <= 0 && secLeft <= 0) {
             modalMsgBox(tr("Time's up!"), tr("Your time is up!"), true);
-            secLeft = 0;
-            minLeft = 0;
-            ui->timeLbl->setText(QString::number(minLeft) + " : " + QString::number(secLeft));
             countingUp = true;
+            if(minLeft < 0) { minLeft *= -1; }
+            if(secLeft < 0) { secLeft *= -1; }
+
+            setStyleSheet("background-color: rgb(255, 0, 0);");
+
 #ifdef Q_OS_WIN
             taskbarProgress->stop();
             taskbarProgress->setValue(100);
 #endif
-            this->setStyleSheet("background-color: rgb(255,0,0);");
-            ui->pauseBtn->setText(tr("Pause")); // How would it be possible to be otherwise anyway?
-            timer->start();
-            return;
         }
-        if((minLeft <= 4) && (origMins >= 5) && (!didDoFiveMbox))
-        {
-            didDoFiveMbox = true;
-            if(showWarn)
-            { modalMsgBox(tr("5 minutes left!"), tr("You have 5 minutes left.")); }
+        /* Get rid of any negatives on the seconds */
+        while(secLeft < 0) {
+            minLeft -= 1;
+            secLeft += 60;
         }
-        if((minLeft <= 0) && (secLeft <= 30) && (!didDo30sMbox))
-        {
-            didDo30sMbox = true;
-            if(showWarn)
-            { modalMsgBox(tr("30 seconds left!"),tr("You have 30 seconds left.")); }
+
+        if(showWarn) {
+            if(minLeft <= 4 && origMins >= 5 && !didDoFiveMbox) {
+                didDoFiveMbox = true;
+                modalMsgBox(tr("5 minutes left!"), tr("You have 5 minutes left."));
+            } else if(minLeft <= 0 && secLeft <= 30 && origMins > 0 && !didDo30sMbox) {
+                didDo30sMbox = true;
+                modalMsgBox(tr("30 seconds left!"),tr("You have 30 seconds left."));
+            }
         }
-        ui->timeLbl->setText(QString::number(minLeft) + " : " + QString::number(secLeft));
+
 #ifdef Q_OS_WIN
-        int percTot = ((minLeft+((secLeft/60.0)))/origMins)*100;
-        taskbarProgress->setValue(percTot);
+        int percent = ((minLeft+(secLeft/60.0))/origMins)*100;
+        taskbarProgress->setValue(percent);
 #endif
-    }
-    else if(countingUp)
-    {
+    } else if(countingUp) {
         minLeft += minPassed;
         secLeft += secPassed;
-        // Get rid of any overflows on the seconds
-        if(secLeft >= 60)
-        {
+        if(secLeft >= 60) {
             minLeft += 1;
             secLeft -= 60;
         }
-        if((minLeft >= 5) && (!didDoOvrFiveMbox))
-        {
+        if(minLeft >= 5 && !didDoOvrFiveMbox) {
             didDoOvrFiveMbox = true;
-            modalMsgBox(tr("5 minutes overtime!"), tr("You are 5 minutes overtime!"), true);
-        }
-        if((minLeft >= 10) && (!didDoOvrTenMbox))
-        {
+            modalMsgBox(tr("5 minutes overtime!"), tr("You are 5 minutes overtime."), true);
+        } else if(minLeft >= 10 && !didDoOvrTenMbox) {
             didDoOvrTenMbox = true;
-            modalMsgBox(tr("10 minutes overtime!"), tr("You are 10 minutes overtime!"), true);
-        }
-        if((minLeft >= 15) && (!didDoOvrFiftMbox))
-        {
+            modalMsgBox(tr("10 minutes overtime!"), tr("You are 10 minutes overtime."), true);
+        } else if(minLeft >= 15 && !didDoOvrFiftMbox) {
             didDoOvrFiftMbox = true;
-            modalMsgBox(tr("15 minutes overtime!"), tr("You are 15 minutes overtime!"), true);
+            modalMsgBox(tr("15 minutes overtime!"), tr("You are 15 minutes overtime."), true);
         }
-        ui->timeLbl->setText(QString::number(minLeft) + " : " + QString::number(secLeft));
     }
-    if(secLeft <= 9)
-    {
-        ui->timeLbl->setText(QString::number(minLeft) + " : 0" + QString::number(secLeft));
-    }
+    updateTimeLabel();
 }
 
-int MainFrm::modalMsgBox(QString tagline, QString text, bool critical)
+void MainFrm::modalMsgBox(QString tagline, QString text, bool critical)
 {
     QDesktopWidget *desktop = QApplication::desktop();
     QMessageBox *msg = new QMessageBox(desktop);
@@ -239,47 +199,65 @@ int MainFrm::modalMsgBox(QString tagline, QString text, bool critical)
     y = (screenHeight - height) / 2;
     msg->setGeometry(x, y, msg->geometry().width(),msg->geometry().height());
 #endif
-    return msg->exec();
+    msg->show();
+}
+
+void MainFrm::updateTimeLabel()
+{
+    if(secLeft < 10) {
+        ui->timeLbl->setText(QString("%1 : 0%2").arg(minLeft).arg(secLeft));
+    } else {
+        ui->timeLbl->setText(QString("%1 : %2").arg(minLeft).arg(secLeft));
+    }
 }
 
 void MainFrm::on_pauseBtn_clicked()
 {
-    if(timer->isActive())
-    {
-        timer->stop();
+    if(triggerTimer.isActive()) {
+        triggerTimer.stop();
         ui->pauseBtn->setText(tr("Resume"));
+
 #ifdef Q_OS_WIN
         taskbarProgress->resume();
         taskbarProgress->pause();
 #endif
-    }
-    else
-    {
-        timer->start();
-        timeStarted = QDateTime::currentDateTime();
+    } else {
+        triggerTimer.start();
+        accurateTimer.restart();
         ui->pauseBtn->setText(tr("Pause"));
+
 #ifdef Q_OS_WIN
-        if(countingUp)
-        { taskbarProgress->stop(); }
-        else
-        { taskbarProgress->resume(); }
+        if(countingUp) {
+            taskbarProgress->stop();
+        } else {
+            taskbarProgress->resume();
+        }
 #endif
     }
 }
 
 void MainFrm::on_resetBtn_clicked()
 {
-    timer->stop();
-    this->setStyleSheet("");
+    triggerTimer.stop();
     minLeft = origMins;
     secLeft = 0;
+
+    setStyleSheet("");
     ui->pauseBtn->setText(tr("Pause"));
-    ui->timeLbl->setText(QString::number(origMins) + " : 00");
+    updateTimeLabel();
+
     countingUp = false;
+    didDoOvrTenMbox = false;
+    didDoOvrFiftMbox = false;
+    didDoOvrFiveMbox = false;
+    didDoFiveMbox = false;
+    didDo30sMbox = false;
+
+    triggerTimer.start();
+    accurateTimer.restart();
+
 #ifdef Q_OS_WIN
     taskbarProgress->resume();
     taskbarProgress->setValue(100);
 #endif
-    timer->start();
-    timeStarted = QDateTime::currentDateTime();
 }

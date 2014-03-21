@@ -25,13 +25,16 @@
 #define MAINFRM_H
 
 #include <QDialog>
-#include <QString>
+#include <QTimer>
+#include <QElapsedTimer>
+
+#ifdef Q_OS_WIN
+#   include <QtWinExtras>
+#endif
 
 namespace Ui {
 class MainFrm;
 }
-class QWinTaskbarButton;
-class QWinTaskbarProgress;
 
 class MainFrm : public QDialog
 {
@@ -51,8 +54,27 @@ private slots:
     void on_resetBtn_clicked();
 
 private:
+    /* Timer state */
+    QTimer triggerTimer;
+    QElapsedTimer accurateTimer;
+
+    bool countingUp;
+    bool showWarn;
+
+    bool didDoOvrTenMbox;
+    bool didDoOvrFiftMbox;
+    bool didDoOvrFiveMbox;
+    bool didDoFiveMbox;
+    bool didDo30sMbox;
+
+    int origMins;
+    int minLeft;
+    int secLeft;
+
+    /* Regular stuff */
     Ui::MainFrm *ui;
-    int modalMsgBox(QString tagline, QString text, bool critical = false);
+    void modalMsgBox(QString tagline, QString text, bool critical = false);
+    void updateTimeLabel();
 
 #ifdef Q_OS_WIN
     QWinTaskbarButton* taskbarButton;
