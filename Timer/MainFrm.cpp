@@ -57,6 +57,51 @@ MainFrm::~MainFrm()
     delete ui;
 }
 
+
+void MainFrm::modalMsgBox(QString tagline, QString text, bool critical)
+{
+    QDesktopWidget *desktop = QApplication::desktop();
+    QMessageBox *msg = new QMessageBox(desktop);
+    msg->setWindowTitle(tr("SimpleTimer"));
+    msg->setInformativeText(tagline);
+    msg->setText("<big><b>" + text + "</b></big>");
+    msg->setWindowFlags(msg->windowFlags() | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
+
+    if(critical) {
+        msg->setIcon(QMessageBox::Critical);
+    } else {
+        msg->setIcon(QMessageBox::Information);
+    }
+
+#ifdef Q_WS_X11
+    /* Center window in current screen.
+     *   From http://www.qtcentre.org/threads/14772-how-to-show-window-in-the-center-of-the-screen
+     * Unnecessary for Windows because it automatically centers the window. */
+    int screenWidth, width;
+    int screenHeight, height;
+    int x, y;
+    QSize windowSize;
+    screenWidth = desktop->width();
+    screenHeight = desktop->height();
+    windowSize = msg->size();
+    width = windowSize.width();
+    height = windowSize.height();
+    x = (screenWidth - width) / 2;
+    y = (screenHeight - height) / 2;
+    msg->setGeometry(x, y, msg->geometry().width(),msg->geometry().height());
+#endif
+    msg->show();
+}
+
+void MainFrm::updateTimeLabel()
+{
+    if(secLeft < 10) {
+        ui->timeLbl->setText(QString("%1 : 0%2").arg(minLeft).arg(secLeft));
+    } else {
+        ui->timeLbl->setText(QString("%1 : %2").arg(minLeft).arg(secLeft));
+    }
+}
+
 bool MainFrm::event(QEvent *e)
 {
     if(e->type() == QEvent::EnterWhatsThisMode) {
@@ -66,7 +111,7 @@ bool MainFrm::event(QEvent *e)
         msg->setWindowTitle(tr("About SimpleTimer"));
         msg->setText(tr("<b>SimpleTimer</b>"));
         msg->setInformativeText(tr("<i>Version 1.3</i><br>&copy; 2009-2014 waddlesplash<br><a href=\"https://github.com/waddlesplash/simpletimer\">View on GitHub</a>"));
-        msg->setIconPixmap(this->windowIcon().pixmap(32,32));
+        msg->setIconPixmap(windowIcon().pixmap(32, 32));
         msg->exec();
         return true;
     } else {
@@ -85,7 +130,7 @@ void MainFrm::on_startBtn_clicked()
 
     triggerTimer.setInterval(1000);
     triggerTimer.setSingleShot(false);
-    connect(&triggerTimer,SIGNAL(timeout()),this,SLOT(time()));
+    connect(&triggerTimer, SIGNAL(timeout()), this, SLOT(time()));
     triggerTimer.start();
     accurateTimer.start();
 
@@ -155,60 +200,16 @@ void MainFrm::time()
         }
         if(minLeft >= 5 && !didDoOvrFiveMbox) {
             didDoOvrFiveMbox = true;
-            modalMsgBox(tr("5 minutes overtime!"), tr("You are 5 minutes overtime."), true);
+            modalMsgBox(tr("5 minutes overtime!"), tr("You are 5 minutes overtime!"), true);
         } else if(minLeft >= 10 && !didDoOvrTenMbox) {
             didDoOvrTenMbox = true;
-            modalMsgBox(tr("10 minutes overtime!"), tr("You are 10 minutes overtime."), true);
+            modalMsgBox(tr("10 minutes overtime!"), tr("You are 10 minutes overtime!"), true);
         } else if(minLeft >= 15 && !didDoOvrFiftMbox) {
             didDoOvrFiftMbox = true;
-            modalMsgBox(tr("15 minutes overtime!"), tr("You are 15 minutes overtime."), true);
+            modalMsgBox(tr("15 minutes overtime!"), tr("You are 15 minutes overtime!"), true);
         }
     }
     updateTimeLabel();
-}
-
-void MainFrm::modalMsgBox(QString tagline, QString text, bool critical)
-{
-    QDesktopWidget *desktop = QApplication::desktop();
-    QMessageBox *msg = new QMessageBox(desktop);
-    msg->setWindowTitle(tr("SimpleTimer"));
-    msg->setInformativeText(tagline);
-    msg->setText("<big><b>" + text + "</b></big>");
-    msg->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
-
-    if(critical) {
-        msg->setIcon(QMessageBox::Critical);
-    } else {
-        msg->setIcon(QMessageBox::Information);
-    }
-
-#ifdef Q_WS_X11
-    /* Center window in current screen.
-     *   From http://www.qtcentre.org/threads/14772-how-to-show-window-in-the-center-of-the-screen
-     * Unnecessary for Windows because it automatically centers the window. */
-    int screenWidth, width;
-    int screenHeight, height;
-    int x, y;
-    QSize windowSize;
-    screenWidth = desktop->width();
-    screenHeight = desktop->height();
-    windowSize = msg->size();
-    width = windowSize.width();
-    height = windowSize.height();
-    x = (screenWidth - width) / 2;
-    y = (screenHeight - height) / 2;
-    msg->setGeometry(x, y, msg->geometry().width(),msg->geometry().height());
-#endif
-    msg->show();
-}
-
-void MainFrm::updateTimeLabel()
-{
-    if(secLeft < 10) {
-        ui->timeLbl->setText(QString("%1 : 0%2").arg(minLeft).arg(secLeft));
-    } else {
-        ui->timeLbl->setText(QString("%1 : %2").arg(minLeft).arg(secLeft));
-    }
 }
 
 void MainFrm::on_pauseBtn_clicked()
