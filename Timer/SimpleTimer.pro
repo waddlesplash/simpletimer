@@ -16,8 +16,8 @@ TARGET = simpletimer
 TEMPLATE = app
 
 SOURCES += Main.cpp \
-    MainFrm.cpp
+    TimerWind.cpp
 
-HEADERS  += MainFrm.h
+HEADERS  += TimerWind.h
 
-FORMS    += MainFrm.ui
+FORMS    += TimerWind.ui

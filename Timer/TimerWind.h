@@ -21,8 +21,8 @@
  *
 */
 
-#ifndef MAINFRM_H
-#define MAINFRM_H
+#ifndef TimerWind_H
+#define TimerWind_H
 
 #include <QDialog>
 #include <QTimer>
@@ -33,16 +33,16 @@
 #endif
 
 namespace Ui {
-class MainFrm;
+class TimerWind;
 }
 
-class MainFrm : public QDialog
+class TimerWind : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit MainFrm(QWidget *parent = 0);
-    ~MainFrm();
+    explicit TimerWind(QWidget *parent = 0);
+    ~TimerWind();
 
 protected:
     bool event(QEvent *e);
@@ -72,7 +72,7 @@ private:
     int secLeft;
 
     /* Regular stuff */
-    Ui::MainFrm *ui;
+    Ui::TimerWind *ui;
     void modalMsgBox(QString tagline, QString text, bool critical = false);
     void updateTimeLabel();
 
@@ -82,4 +82,4 @@ private:
 #endif
 };
 
-#endif // MAINFRM_H
+#endif // TimerWind_H

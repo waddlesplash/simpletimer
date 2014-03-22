@@ -21,16 +21,16 @@
  *
 */
 
-#include "MainFrm.h"
-#include "ui_MainFrm.h"
+#include "TimerWind.h"
+#include "ui_TimerWind.h"
 
 #include <QMessageBox>
 #include <QDesktopWidget>
 #include <QWhatsThis>
 
-MainFrm::MainFrm(QWidget *parent) :
+TimerWind::TimerWind(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::MainFrm)
+    ui(new Ui::TimerWind)
 {
     ui->setupUi(this);
 
@@ -52,13 +52,13 @@ MainFrm::MainFrm(QWidget *parent) :
     }
 }
 
-MainFrm::~MainFrm()
+TimerWind::~TimerWind()
 {
     delete ui;
 }
 
 
-void MainFrm::modalMsgBox(QString tagline, QString text, bool critical)
+void TimerWind::modalMsgBox(QString tagline, QString text, bool critical)
 {
     QDesktopWidget *desktop = QApplication::desktop();
     QMessageBox *msg = new QMessageBox(desktop);
@@ -93,7 +93,7 @@ void MainFrm::modalMsgBox(QString tagline, QString text, bool critical)
     msg->show();
 }
 
-void MainFrm::updateTimeLabel()
+void TimerWind::updateTimeLabel()
 {
     if(secLeft < 10) {
         ui->timeLbl->setText(QString("%1 : 0%2").arg(minLeft).arg(secLeft));
@@ -102,7 +102,7 @@ void MainFrm::updateTimeLabel()
     }
 }
 
-bool MainFrm::event(QEvent *e)
+bool TimerWind::event(QEvent *e)
 {
     if(e->type() == QEvent::EnterWhatsThisMode) {
         QWhatsThis::leaveWhatsThisMode();
@@ -119,7 +119,7 @@ bool MainFrm::event(QEvent *e)
     }
 }
 
-void MainFrm::on_startBtn_clicked()
+void TimerWind::on_startBtn_clicked()
 {
     ui->stackedWidget->setCurrentIndex(1);
     setWindowTitle(tr("Timing"));
@@ -144,7 +144,7 @@ void MainFrm::on_startBtn_clicked()
 #endif
 }
 
-void MainFrm::time()
+void TimerWind::time()
 {
     int minPassed = 0;
     int secPassed = accurateTimer.restart()/1000;
@@ -215,7 +215,7 @@ void MainFrm::time()
     updateTimeLabel();
 }
 
-void MainFrm::on_pauseBtn_clicked()
+void TimerWind::on_pauseBtn_clicked()
 {
     if(triggerTimer.isActive()) {
         triggerTimer.stop();
@@ -240,7 +240,7 @@ void MainFrm::on_pauseBtn_clicked()
     }
 }
 
-void MainFrm::on_resetBtn_clicked()
+void TimerWind::on_resetBtn_clicked()
 {
     triggerTimer.stop();
     minLeft = origMins;

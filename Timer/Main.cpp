@@ -22,13 +22,13 @@
 */
 
 #include <QApplication>
-#include "MainFrm.h"
+#include "TimerWind.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    MainFrm w;
+    TimerWind w;
     w.show();
 
     return a.exec();

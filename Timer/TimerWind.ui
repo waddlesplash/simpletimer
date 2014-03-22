@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainFrm</class>
- <widget class="QDialog" name="MainFrm">
+ <class>TimerWind</class>
+ <widget class="QDialog" name="TimerWind">
   <property name="geometry">
    <rect>
     <x>0</x>
