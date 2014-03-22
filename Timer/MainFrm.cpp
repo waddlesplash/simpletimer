@@ -187,10 +187,6 @@ void MainFrm::time()
             }
         }
 
-#ifdef Q_OS_WIN
-        int percent = ((minLeft+(secLeft/60.0))/origMins)*100;
-        taskbarProgress->setValue(percent);
-#endif
     } else if(countingUp) {
         minLeft += minPassed;
         secLeft += secPassed;
@@ -209,6 +205,13 @@ void MainFrm::time()
             modalMsgBox(tr("15 minutes overtime!"), tr("You are 15 minutes overtime!"), true);
         }
     }
+
+#ifdef Q_OS_WIN
+    if(!countingUp) {
+        int percent = ((minLeft+(secLeft/60.0))/origMins)*100;
+        taskbarProgress->setValue(percent);
+    }
+#endif
     updateTimeLabel();
 }
 
