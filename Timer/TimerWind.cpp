@@ -63,8 +63,8 @@ void TimerWind::modalMsgBox(QString tagline, QString text, bool critical)
     QDesktopWidget *desktop = QApplication::desktop();
     QMessageBox *msg = new QMessageBox(desktop);
     msg->setWindowTitle(tr("SimpleTimer"));
-    msg->setInformativeText(tagline);
-    msg->setText("<big><b>" + text + "</b></big>");
+    msg->setInformativeText(text);
+    msg->setText("<big><b>" + tagline + "</b></big>");
     msg->setWindowFlags(msg->windowFlags() | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
 
     if(critical) {
