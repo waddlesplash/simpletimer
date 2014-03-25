@@ -1,3 +1,5 @@
-dist*/
+dist/
+binary/
+build/
 *build*/
 *.user*
